@@ -29,7 +29,7 @@ per gli n filtri
 
 class Quanvolutional_NN():
 
-    def __init__(self, filterdim = 3):
+    def __init__(self, filterdim = 3, train_size = 1000, circuit_small = "yes"):
         self.singleQ = {
             'X-rotation' : 'RX',
             'Y-rotation' : 'RY',
@@ -52,10 +52,10 @@ class Quanvolutional_NN():
         self.x_test = 0
         self.y_test = 0
 
-        self.train_size = 5000
+        self.train_size = train_size
         self.threshold = 0.5 
         self.classes = 2
-
+        self.depth = 10 # nel paper 2*filterdim**2, quindi per filterdim=2 ---> 16
         
         self.filter = "yes" #se filtrare o meno i dati per avere solo due digits
         self.shots = 20
@@ -64,11 +64,13 @@ class Quanvolutional_NN():
         self.width = 0
         self.heigth = 0
         self.epochs = 20
-        self.name = "Test_" + str(self.train_size) + "_" + str(self.epochs)
-        self.path = "/Users/niccolo/Desktop/mnist/results/Filters_" + str(self.nfilter) + "/" + self.name + "/"
         self.validationsize = 0.2
         self.batch_size = 16
         self.filterdim = filterdim
+        self.small_circuit = circuit_small
+        self.name = "Test_" + str(self.train_size) + "_" + str(self.epochs)
+        self.path = "/Users/niccolo/Desktop/mnist/results/" + str(filterdim) + "x" + str(filterdim) 
+            + "_filter" + "/Filters_" + str(self.nfilter) + "/" + self.name + "/"
 
     def initialize_data(self, dimension):
 
@@ -143,8 +145,15 @@ class Quanvolutional_NN():
         Args: no
         Output: random circuit 
         '''
-        circuit_recipe_singleQ, circuit_recipe_twoQ = self.circuit_recipe()
-        circuit_recipe = circuit_recipe_singleQ + circuit_recipe_twoQ
+
+        if self.small_circuit == "yes":
+            circuit_recipe_singleQ, circuit_recipe_twoQ = self.circuit_recipe_small()
+            circuit_recipe = circuit_recipe_singleQ + circuit_recipe_twoQ
+
+        else:
+            circuit_recipe_singleQ, circuit_recipe_twoQ = self.circuit_recipe()
+            circuit_recipe = circuit_recipe_singleQ + circuit_recipe_twoQ
+
         random.shuffle(circuit_recipe)
 
         c = Circuit(self.filterdim ** 2)
@@ -205,6 +214,29 @@ class Quanvolutional_NN():
 
         # print(c.draw())
         return c, circuit_recipe
+
+    def circuit_recipe_small(self):
+
+        circuit_recipe_singleQ = []
+        random_number = random.randint(1, self.depth)
+        for _ in range(random_number):
+            random_probability = random.random()
+            if random_probability > 0.5:
+                random_key_singleQ = random.choice(list(self.singleQ.keys()))
+                random_value_singleQ = self.singleQ[random_key_singleQ]
+                circuit_recipe_singleQ.append(random_value_singleQ)
+
+        nqubits = int(self.filterdim ** 2)
+        total_possible_combinations = int(math.factorial(nqubits) / (2 * math.factorial((nqubits - 2))))
+        circuit_recipe_twoQ = []
+        for _ in range(total_possible_combinations):
+            random_probability = random.random()
+            if random_probability > 0.5:
+                random_key_twoQ = random.choice(list(self.twoQ.keys()))
+                random_value_twoQ = self.twoQ[random_key_twoQ]
+                circuit_recipe_twoQ.append(random_value_twoQ)
+
+        return circuit_recipe_singleQ, circuit_recipe_twoQ
 
     def circuit_recipe(self):
         circuit_recipe_singleQ = []
