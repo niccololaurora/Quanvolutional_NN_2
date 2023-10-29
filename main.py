@@ -1,21 +1,42 @@
 import tensorflow as tf
 import numpy as np
 
-from qclassifier import Quanvolutional_NN
+
+from help import initialize_data, barplot, plot_metrics
+from quanvolutional_layer import Quanvolutional_Layer, MyModel, CNNBlock
 
 
 
 def main():
 
-    dimensione_filtro = 2
-    numero_immagini = 1000
+    nclasses = 2
+    filterdim = 2
+    nfilter = 5
+    train_size = 100
     depth = 10
+    resize = 10
+    filt = "yes"
+    path = "/Users/niccolo/Desktop/mnist/test"
 
-    qcnn = Quanvolutional_NN(filterdim = dimensione_filtro, train_size = numero_immagini)
-    qcnn.initialize_data(10)
-    qcnn.quanvolutional_layer()
-    history = qcnn.training_loop()
-    qcnn.plot_metrics(history)
+    # load data
+    x_train, y_train, x_test, y_test = initialize_data(train_size, resize, filt)
+    print(f"Quanv filter {x_train.shape}")
+
+    # my model
+    model = MyModel(filterdim, nfilter, depth, nclasses, path)
+
+    model.compile(
+        loss = tf.keras.losses.SparseCategoricalCrossentropy(),
+        optimizer = tf.keras.optimizers.Adam(lr=0.001),
+        metrics = ['accuracy']
+    )
+
+    history = model.fit(x_train, y_train, epochs=5, batch_size=32, verbose=2)
+    model.evaluate(x_test, y_test)
+
+    plot_metrics(history)
+
+
 
 if __name__ == "__main__":
     main()
