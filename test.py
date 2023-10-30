@@ -11,3 +11,8 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+'''
+C'è un problema: non vengono allenati i filtri!!!!
+'''

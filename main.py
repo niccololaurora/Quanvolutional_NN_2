@@ -1,14 +1,15 @@
 import tensorflow as tf
 import numpy as np
-
-
 from help import initialize_data, barplot, plot_metrics
 from quanvolutional_layer import Quanvolutional_Layer, MyModel, CNNBlock
 
 
+import os
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
+
 
 def main():
-
     nclasses = 2
     filterdim = 2
     nfilter = 5
@@ -20,25 +21,27 @@ def main():
 
     # load data
     x_train, y_train, x_test, y_test = initialize_data(train_size, resize, filt)
-    print(f"Quanv filter {x_train.shape}")
 
     # my model
     model = MyModel(filterdim, nfilter, depth, nclasses, path)
 
     model.compile(
-        loss = tf.keras.losses.SparseCategoricalCrossentropy(),
-        optimizer = tf.keras.optimizers.Adam(lr=0.001),
-        metrics = ['accuracy']
+        loss=tf.keras.losses.SparseCategoricalCrossentropy(),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+        metrics=["accuracy"],
     )
 
-    history = model.fit(x_train, y_train, epochs=5, batch_size=32, verbose=2)
-    model.evaluate(x_test, y_test)
+    history = model.fit(
+        x_train,
+        y_train,
+        epochs=5,
+        batch_size=32,
+        verbose=2,
+        validation_data=(x_test, y_test),
+    )
 
     plot_metrics(history)
 
 
-
 if __name__ == "__main__":
     main()
-
-    
