@@ -288,6 +288,11 @@ def counter(result, nshots):
     return mean
 
 
+"""
+Questa funzione è il vero corpo della funzione "quanvolutional_filter"
+"""
+
+
 def calculate_qconvolutional_output(image, filterdim, threshold, shots, quanv_filter):
     image_height, image_width = image.shape
     print(f"Shape {image.shape}")
