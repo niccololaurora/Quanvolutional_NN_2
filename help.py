@@ -5,6 +5,9 @@ import numpy as np
 import os
 import collections
 from tensorflow.keras.datasets import mnist
+import qibo
+
+qibo.set_backend("tensorflow")
 from qibo import Circuit, gates
 
 
@@ -201,7 +204,7 @@ def initial_state(qubits_initialization):
             state = tf.Variable([0, 1])
             initial_state = tf.tensordot(initial_state, state, axes=0)
 
-    return initial_state
+    return tf.reshape(initial_state, [-1])
 
 
 def initialize_data(train_size, resize, filt):
@@ -273,25 +276,27 @@ def plot_metrics(history):
 
 
 def counter(result, nshots):
-    conteggi = []
-    for i in range(nshots):
-        conteggio = np.count_nonzero(result.samples(binary=True)[i])
-        conteggi.append(conteggio)
-
-    mean = int(sum(conteggi) / len(conteggi))
+    # result = tf.constant(result.samples(binary=True))
+    # print(f"Result {result.samples(binary=True)}")
+    conteggio = np.count_nonzero(result.samples(binary=True))
+    mean = int(sum(conteggio) / len(conteggio))
+    return mean
 
 
 def calculate_qconvolutional_output(image, filterdim, threshold, shots, quanv_filter):
     image_height, image_width = image.shape
+    print(f"Shape {image.shape}")
     qconvolutional_output_width = image_height - filterdim + 1
     qconvolutional_output_height = image_width - filterdim + 1
 
-    qconvolutional_output = np.zeros(
+    qconvolutional_output = tf.zeros(
         (qconvolutional_output_width, qconvolutional_output_height)
     )
 
     for i in range(qconvolutional_output_width):
+        print(f"Riga {i}")
         for j in range(qconvolutional_output_height):
+            print(f"Colonna {j}")
             roi = image[i : i + filterdim, j : j + filterdim]
             flattened_roi = tf.reshape(roi, [-1])
 
@@ -299,11 +304,18 @@ def calculate_qconvolutional_output(image, filterdim, threshold, shots, quanv_fi
             print(qubits_initialization)
 
             init_state = initial_state(qubits_initialization)
+
+            print(f"init_state {init_state}")
             result = quanv_filter(init_state, nshots=shots)
+            print(f"Shots {shots}")
 
-            mean_counts = result.mean()
+            print(f"result {result.state()}")
 
-            qconvolutional_output[i][j] = mean_counts
+            print("Prima della media")
+            # mean_counts = counter(result, shots)
+            print("Dopo la media")
+            # qconvolutional_output[i][j] = mean_counts
+        print("Normalizzazione della media")
+        qconvolutional_output /= filterdim**2
 
-    qconvolutional_output /= filterdim**2
     return qconvolutional_output

@@ -22,12 +22,16 @@ model.compile, model.fit, model.evaluate
 
 
 class MyModel(tf.keras.Model):
-    def __init__(self, filterdim, nfilter, depth, nclasses, path=None):
+    def __init__(
+        self, filterdim, nfilter, depth, nclasses, x_train, y_train, path=None
+    ):
         super(MyModel, self).__init__()
         self.Quanv_layer = Quanvolutional_Layer(
             filterdim=filterdim, nfilter=nfilter, depth=depth, path=path
         )
         self.CNNBlock = CNNBlock(nclasses=nclasses)
+        self.x_train = x_train
+        self.y_train = y_train
 
     def call(self, x):
         output = self.CNNBlock(self.Quanv_layer(x))
@@ -99,13 +103,14 @@ class Quanvolutional_Layer(tf.keras.layers.Layer):
         qconvolutional_output_heigth = image_heigth - self.filterdim + 1
         # self.width = qconvolutional_output_width
         # self.height = qconvolutional_output_heigth
-
+        print("Before calculate_qconvolutional_output")
+        print(self.random_circuit.draw())
         qconvolutional_output = calculate_qconvolutional_output(
             image,
             self.filterdim,
             self.threshold,
             self.shots,
-            self.random_circuit,
+            quanv_filter,
         )
 
         return qconvolutional_output
@@ -122,7 +127,12 @@ class CNNBlock(tf.keras.layers.Layer):
         self.nclasses = nclasses
 
     def call(self, inputs):
-        x = tf.keras.layers.Conv2D(64, (2, 2), activation="relu")(inputs)
+        print(f"inputs shape CNNBLOCk {inputs.shape}")
+        expanded_inputs = inputs[tf.newaxis, :, :, tf.newaxis]
+        print(f"inputs shape CNNBLOCk {expanded_inputs.shape}")
+        x = tf.keras.layers.Conv2D(64, (2, 2), activation="relu", input_shape=(9, 9))(
+            expanded_inputs
+        )
         x = tf.keras.layers.AveragePooling2D()(x)
         x = tf.keras.layers.Conv2D(128, (2, 2), activation="relu")(x)
         x = tf.keras.layers.Flatten()(x)
