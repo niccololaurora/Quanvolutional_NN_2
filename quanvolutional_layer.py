@@ -16,7 +16,7 @@ from help import (
 
 
 """
-This class inherits from tf.Keras.Model, hence I will access to:
+This class inherits from tf.Keras.Model, hence I will be able to access:
 model.compile, model.fit, model.evaluate
 """
 
@@ -39,7 +39,7 @@ class MyModel(tf.keras.Model):
 
 
 """
-This is my Quanvolutional Layer.
+My custom (keras) Quanvolutional Layer.
 """
 
 
@@ -64,6 +64,8 @@ class Quanvolutional_Layer(tf.keras.layers.Layer):
             "Cnot": "CNOT",
         }
 
+    # Method to build a simple random circuit
+    # Later on I will upgrade the complexity of the random circuit
     def build(self, input_shape):
         initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=1.0)
         # values = initializer(shape=(1, 3))

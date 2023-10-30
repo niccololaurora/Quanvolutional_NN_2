@@ -8,6 +8,11 @@ import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
+"""
+This callback is useful to print the shape of 
+the data throghout the training process.
+"""
+
 
 class PrintDataShapeCallback(tf.keras.callbacks.Callback):
     def on_train_batch_begin(self, batch, logs=None):

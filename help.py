@@ -11,6 +11,11 @@ qibo.set_backend("tensorflow")
 from qibo import Circuit, gates
 
 
+"""
+Miscellaneous file: some useful functions.
+"""
+
+
 def circuit_recipe(filterdim, singleQ, twoQ):
     circuit_recipe_singleQ = []
     random_number = random.randint(1, 2 * filterdim**2)
